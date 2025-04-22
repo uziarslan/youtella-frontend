@@ -1,0 +1,165 @@
+/* Pricing Page Styles */
+.pricing-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+    padding: 20px;
+}
+
+.pricing-table {
+    max-width: 912px;
+    width: 100%;
+}
+
+.border-bottom-custom {
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.table-heading {
+    margin: 0;
+    color: #0F172A;
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 100%;
+    letter-spacing: 0%;
+}
+
+.feature-row {
+    padding: 15px 0;
+}
+
+.feature-name {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #0F172A;
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+.chevron-icon {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+}
+
+.feature-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0;
+}
+
+.feature-detail.open {
+    max-height: 100px;
+    padding: 10px 0 10px 24px;
+}
+
+.feature-detail p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #666F8D;
+    line-height: 1.5;
+}
+
+.feature-detail-text {
+    font-weight: 400;
+    font-size: 0.8rem;
+    line-height: 24px;
+    letter-spacing: 0%;
+    color: #475569;
+}
+
+.start-premium-btn {
+    background-color: #3B82F6;
+    color: #fff;
+    border: none;
+    padding: 24px 0;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+
+    .pricing-header {
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .feature-row {
+        padding: 10px 0;
+    }
+
+    .feature-toggle {
+        font-size: 0.9rem;
+    }
+
+    .feature-detail.open {
+        max-height: 150px;
+        /* Adjust for smaller screens */
+        padding: 8px 0 8px 24px;
+    }
+
+    .feature-detail p {
+        font-size: 0.85rem;
+    }
+
+    .pricing-table h3 {
+        font-size: 1.1rem;
+    }
+
+    .check,
+    .cross {
+        font-size: 1rem;
+    }
+
+    .start-premium-btn {
+        font-size: 0.9rem;
+        padding: 10px 0;
+        max-width: 100%;
+    }
+
+    .interactionInput {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .interactionInput input {
+        padding-right: 30px;
+        font-size: 0.6rem;
+    }
+
+    .interactionInput input {
+        padding-right: 30px;
+    }
+
+    .interactionBtnWrapper {
+        width: 100%;
+        margin-left: 0px;
+        max-width: 533px;
+    }
+
+    .getSummaryBtn {
+        flex-grow: 1;
+        font-size: 0.6rem;
+    }
+
+    .interactionSubheading {
+        font-size: 0.6rem;
+    }
+
+}

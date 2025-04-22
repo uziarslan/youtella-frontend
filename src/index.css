@@ -1,0 +1,44 @@
+html {
+  /* box-sizing: border-box; */
+  font-size: 20px;
+  background-color: #F7F8FA;
+  padding: 19px 16px;
+  max-height: 100vh;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #3B82F6;
+}
+
+.max-width {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+  transform: scale(1.02);
+}
