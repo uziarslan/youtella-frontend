@@ -453,60 +453,68 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                     onChange={handleUrlChange}
                     disabled={isLoading || uploadedFile}
                 />
-                <div className="interactionBtnMobile d-md-none">
-                    <i
-                        className={`bx bx-paperclip ${uploadedFile ? 'disabled' : ''}`}
-                        onClick={() => toggleDropdown("upload")}
-                        style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
-                    >
-                        {openDropdown === "upload" && (
-                            <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
-                                    Upload Video
-                                </li>
-                                <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
-                                    Upload Audio
-                                </li>
-                            </ul>
-                        )}
-                    </i>
-                </div>
+                {
+                    subscription === "active" && (
+                        <div className="interactionBtnMobile d-md-none">
+                            <i
+                                className={`bx bx-paperclip ${uploadedFile ? 'disabled' : ''}`}
+                                onClick={() => toggleDropdown("upload")}
+                                style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
+                            >
+                                {openDropdown === "upload" && (
+                                    <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                        <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
+                                            Upload Video
+                                        </li>
+                                        <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
+                                            Upload Audio
+                                        </li>
+                                    </ul>
+                                )}
+                            </i>
+                        </div>
+                    )
+                }
                 <div className="interactionBtnWrapper">
-                    <i
-                        className={`bx bx-paperclip d-none d-md-block ${uploadedFile ? 'disabled' : ''}`}
-                        onClick={() => toggleDropdown("upload")}
-                        style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
-                    >
-                        {openDropdown === "upload" && (
-                            <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
-                                    Upload Video
-                                </li>
-                                <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
-                                    Upload Audio
-                                </li>
-                            </ul>
-                        )}
+                    {
+                        subscription === "active" && (
+                            <i
+                                className={`bx bx-paperclip d-none d-md-block ${uploadedFile ? 'disabled' : ''}`}
+                                onClick={() => toggleDropdown("upload")}
+                                style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
+                            >
+                                {openDropdown === "upload" && (
+                                    <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                        <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
+                                            Upload Video
+                                        </li>
+                                        <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
+                                            Upload Audio
+                                        </li>
+                                    </ul>
+                                )}
 
-                        <input
-                            id="videoUpload"
-                            type="file"
-                            accept="video/*"
-                            style={{ display: "none" }}
-                            onChange={(e) => handleFileUpload(e, "video")}
-                            disabled={uploadedFile}
-                            ref={videoUploadRef}
-                        />
-                        <input
-                            id="audioUpload"
-                            type="file"
-                            accept="audio/*"
-                            style={{ display: "none" }}
-                            onChange={(e) => handleFileUpload(e, "audio")}
-                            disabled={uploadedFile}
-                            ref={audioUploadRef}
-                        />
-                    </i>
+                                <input
+                                    id="videoUpload"
+                                    type="file"
+                                    accept="video/*"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => handleFileUpload(e, "video")}
+                                    disabled={uploadedFile}
+                                    ref={videoUploadRef}
+                                />
+                                <input
+                                    id="audioUpload"
+                                    type="file"
+                                    accept="audio/*"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => handleFileUpload(e, "audio")}
+                                    disabled={uploadedFile}
+                                    ref={audioUploadRef}
+                                />
+                            </i>
+                        )
+                    }
                     <button
                         className="getSummaryBtn"
                         type="submit"
