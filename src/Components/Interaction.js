@@ -463,10 +463,15 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                             >
                                 {openDropdown === "upload" && (
                                     <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                        <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
+                                        <li
+                                            className="uploading-items"
+                                            onTouchStart={() => document.getElementById("videoUpload").click()}
+                                        >
                                             Upload Video
                                         </li>
-                                        <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
+                                        <li className="uploading-items"
+                                            onTouchStart={() => document.getElementById("audioUpload").click()}
+                                        >
                                             Upload Audio
                                         </li>
                                     </ul>
@@ -493,25 +498,6 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                                         </li>
                                     </ul>
                                 )}
-
-                                <input
-                                    id="videoUpload"
-                                    type="file"
-                                    accept="video/*"
-                                    style={{ display: "none" }}
-                                    onChange={(e) => handleFileUpload(e, "video")}
-                                    disabled={uploadedFile}
-                                    ref={videoUploadRef}
-                                />
-                                <input
-                                    id="audioUpload"
-                                    type="file"
-                                    accept="audio/*"
-                                    style={{ display: "none" }}
-                                    onChange={(e) => handleFileUpload(e, "audio")}
-                                    disabled={uploadedFile}
-                                    ref={audioUploadRef}
-                                />
                             </i>
                         )
                     }
@@ -681,6 +667,24 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                     </div>
                 )}
             </div>
+            <input
+                id="videoUpload"
+                type="file"
+                accept="video/*"
+                style={{ display: "none" }}
+                onChange={(e) => handleFileUpload(e, "video")}
+                disabled={uploadedFile}
+                ref={videoUploadRef}
+            />
+            <input
+                id="audioUpload"
+                type="file"
+                accept="audio/*"
+                style={{ display: "none" }}
+                onChange={(e) => handleFileUpload(e, "audio")}
+                disabled={uploadedFile}
+                ref={audioUploadRef}
+            />
         </div>
     );
 }
