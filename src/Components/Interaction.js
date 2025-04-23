@@ -531,7 +531,6 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                         <div className="previewContainer">
                             <div className="uploadBlock">
                                 <img className="audioFile" src={audioSvg} alt="Audio File" />
-                                {/* <audio src={fileUrl} /> */}
                                 <div className="uploadInfo">
                                     <p className="uploadInfo">{uploadedFile.name}</p>
                                     <p className="filesize">{(uploadedFile.size / (1024 * 1024)).toFixed(1)} MB</p>
