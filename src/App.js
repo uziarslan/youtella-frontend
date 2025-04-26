@@ -11,7 +11,7 @@ import { useContext } from 'react';
 import { AuthContext } from './Context/AuthContext'; // Adjust path as needed
 import Success from './Pages/Success';
 import Cancel from './Pages/Cancel';
-import Inactive from './Pages/Inactive';
+// import Inactive from './Pages/Inactive';
 import Share from './Pages/Share';
 
 // Wrapper component to handle /chat/:id rendering
