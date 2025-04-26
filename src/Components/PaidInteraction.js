@@ -659,37 +659,37 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                             <span>Share</span>
                         </button>
                         <ul className="dropdown-menu">
-                            <li className="dropdown-item" onClick={handleCopyLink}>
+                            <li className="dropdown-item" onClick={handleCopyLink} onTouchStart={handleCopyLink}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-link"></i>
                                     Copy Sharable Link
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleEmailShare}>
+                            <li className="dropdown-item" onClick={handleEmailShare} onTouchStart={handleEmailShare}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-envelope"></i>
                                     Email This to Someone
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleWhatsAppShare}>
+                            <li className="dropdown-item" onClick={handleWhatsAppShare} onTouchStart={handleWhatsAppShare}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bxl-whatsapp"></i>
                                     Send via WhatsApp
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleTwitterShare}>
+                            <li className="dropdown-item" onClick={handleTwitterShare} onTouchStart={handleTwitterShare}>
                                 <div className="dropiconTextWrapper">
                                     <img src={xIcon} alt="X Icon" />
                                     Post on Twitter/X
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleSlackShare}>
+                            <li className="dropdown-item" onClick={handleSlackShare} onTouchStart={handleSlackShare}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bxl-slack"></i>
                                     Slack Message
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleTextMessageShare}>
+                            <li className="dropdown-item" onClick={handleTextMessageShare} onTouchStart={handleTextMessageShare}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-chat"></i>
                                     Text Message
