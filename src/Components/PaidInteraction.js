@@ -11,8 +11,10 @@ import PropTypes from 'prop-types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import audioSvg from "../Assets/images/audio.svg";
+import xIcon from "../Assets/images/x-icon.svg";
 
-export default function Interaction({ subHeading, subscription, selectedSummary, onSummaryGenerated, onGenerateSummaryRequest }) {
+
+export default function PaidInteraction({ subHeading, selectedSummary, onSummaryGenerated, onGenerateSummaryRequest }) {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [expand, setExpand] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState({
@@ -28,20 +30,16 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
     const [estimatedTime, setEstimatedTime] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
     const [summary, setSummary] = useState({ keypoints: [], summary: "", timestamps: [] });
-    const [error, setError] = useState("");
+    const [message, setMessage] = useState({});
     const [copyButtonText, setCopyButtonText] = useState("Copy Summary");
     const [previewKey, setPreviewKey] = useState(0);
+    const [videoUrl, setVideoUrl] = useState("");
+    const [fileInputType, setFileInputType] = useState(null);
+    const [shareableLink, setShareableLink] = useState("");
 
-    const videoUrlRef = useRef("");
     const dropdownRefs = useRef({});
-    const errorRef = useRef(null);
-    const summaryBoxRef = useRef(null);
-    const buttonRef = useRef(null);
     const summaryTextRef = useRef(null);
-    const videoUploadRef = useRef(null);
-    const audioUploadRef = useRef(null);
 
-    // Mapping functions to convert backend values to frontend dropdown values
     const mapLanguage = (lang) => {
         const languageMap = {
             english: "English",
@@ -70,14 +68,12 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
         return toneMap[tone.toLowerCase()] || "Formal";
     };
 
-    // Update state when selectedSummary changes
     useEffect(() => {
         if (selectedSummary) {
-            console.log("Selected Summary:", selectedSummary);
             setShowSummary(true);
             setSummary({
                 keypoints: selectedSummary.keypoints || [],
-                summary: selectedSummary.summary || "",
+                summary: selectedSummary.summary || [],
                 timestamps: selectedSummary.timestamps || []
             });
             setSelectedOptions({
@@ -85,52 +81,80 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                 Length: mapLength(selectedSummary.summaryLength || "medium"),
                 Tone: mapTone(selectedSummary.summaryTone || "formal")
             });
-            setError("");
-            if (summaryBoxRef.current) {
-                summaryBoxRef.current.style.display = "flex";
-                summaryBoxRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-            if (errorRef.current) errorRef.current.textContent = "";
+            setShareableLink(selectedSummary.shareableLink || "")
+            setMessage({});
         }
     }, [selectedSummary]);
 
-    // Update error display
     useEffect(() => {
-        if (error && errorRef.current) {
-            errorRef.current.textContent = error;
+        if (showSummary) {
+            const summaryBox = document.querySelector('.summary-box');
+            if (summaryBox) {
+                summaryBox.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
         }
-    }, [error]);
+    }, [showSummary, selectedSummary]);
 
-    // Cleanup file URL when component unmounts
     useEffect(() => {
         return () => {
             if (fileUrl) {
-                console.log("Revoking file URL on unmount");
                 URL.revokeObjectURL(fileUrl);
             }
         };
     }, [fileUrl]);
 
+    useEffect(() => {
+        if (fileInputType) {
+            const inputId = fileInputType === "video" ? "videoUploadInput" : "audioUploadInput";
+            const inputElement = document.getElementById(inputId);
+            if (inputElement) {
+                inputElement.click();
+            }
+            setFileInputType(null);
+        }
+    }, [fileInputType]);
+
+    const triggerFileInput = (type) => {
+        setFileInputType(type);
+    };
+
     const handleUrlChange = (e) => {
-        videoUrlRef.current = e.target.value;
+        setVideoUrl(e.target.value);
         setShowSummary(false);
         setSummary({ keypoints: [], summary: "", timestamps: [] });
-        setError("");
-        if (errorRef.current) errorRef.current.textContent = "";
-        if (summaryBoxRef.current) summaryBoxRef.current.style.display = "none";
+        setMessage({});
         setProgress(0);
         setEstimatedTime(0);
+        if (fileUrl) {
+            URL.revokeObjectURL(fileUrl);
+        }
+        setUploadedFile(null);
+        setFileType(null);
+        setFileUrl(null);
+        setPreviewKey(prev => prev + 1);
+        const videoInput = document.getElementById("videoUploadInput");
+        const audioInput = document.getElementById("audioUploadInput");
+        if (videoInput) videoInput.value = "";
+        if (audioInput) audioInput.value = "";
     };
 
     const handleGetSummary = async (event) => {
         event.preventDefault();
-        if (errorRef.current) errorRef.current.textContent = "";
-
-        const videoUrl = videoUrlRef.current;
+        setMessage({})
 
         if (!videoUrl && !uploadedFile) {
-            setError("Please paste a YouTube video URL or upload a file");
+            setMessage({ error: "Please paste a YouTube video URL or upload a file" });
             return;
+        }
+
+        if (uploadedFile) {
+            const fileSizeGb = uploadedFile.size / (1024 * 1024 * 1024);
+            const maxSize = 2;
+
+            if (fileSizeGb > maxSize) {
+                setMessage({ error: `File size exceeds ${maxSize}GB limit for ${fileType}.` });
+                return;
+            }
         }
 
         if (onGenerateSummaryRequest && !onGenerateSummaryRequest()) {
@@ -140,61 +164,49 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
         setIsLoading(true);
         setProgress(0);
         setEstimatedTime(120);
-        if (buttonRef.current) buttonRef.current.textContent = "Loading...";
-        if (buttonRef.current) buttonRef.current.disabled = true;
 
         try {
             let payload = {};
-            let endpoint = `/api/transcript${subscription === "Test" ? "/free" : ""}`;
+            let endpoint = "/api/transcript";
 
             if (uploadedFile) {
                 const formData = new FormData();
-                formData.append("video", uploadedFile); // Match backend's upload.single("video")
-                if (subscription === "active") {
-                    formData.append("language", selectedOptions.Language);
-                    formData.append("length", selectedOptions.Length);
-                    formData.append("tone", selectedOptions.Tone);
-                }
+                formData.append("video", uploadedFile);
+                formData.append("language", selectedOptions.Language);
+                formData.append("length", selectedOptions.Length);
+                formData.append("tone", selectedOptions.Tone);
                 payload = formData;
-                endpoint = "/api/upload"; // Use upload endpoint for files
+                endpoint = "/api/upload";
             } else {
-                payload = { videoUrl };
-                if (subscription === "active") {
-                    payload.language = selectedOptions.Language;
-                    payload.length = selectedOptions.Length;
-                    payload.tone = selectedOptions.Tone;
-                }
+                payload = {
+                    videoUrl,
+                    language: selectedOptions.Language,
+                    length: selectedOptions.Length,
+                    tone: selectedOptions.Tone
+                };
             }
 
             const response = await axiosInstance.post(endpoint, payload, {
                 headers: uploadedFile ? { "Content-Type": "multipart/form-data" } : {}
             });
-            const data = response.data;
+            const { summary, taskId, shareableLink } = response.data;
 
-            if (data.summary) {
+            if (summary) {
                 setShowSummary(true);
-                setSummary(data.summary);
-                setError("");
-                if (summaryBoxRef.current) {
-                    summaryBoxRef.current.style.display = "flex";
-                    summaryBoxRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
+                setSummary(summary);
+                setShareableLink(shareableLink || "");
                 if (onSummaryGenerated) onSummaryGenerated();
             } else {
-                const { taskId } = data;
                 await pollForSummary(taskId);
             }
         } catch (err) {
             setShowSummary(false);
             setSummary({ keypoints: [], summary: "", timestamps: [] });
-            setError(err.response?.data?.error || err.message || "Failed to fetch summary");
-            if (summaryBoxRef.current) summaryBoxRef.current.style.display = "none";
+            setMessage({ error: err.response?.data?.error || err.message || "Failed to fetch summary" });
         } finally {
             setIsLoading(false);
             setProgress(0);
             setEstimatedTime(0);
-            if (buttonRef.current) buttonRef.current.textContent = "Get Summary";
-            if (buttonRef.current) buttonRef.current.disabled = false;
         }
     };
 
@@ -210,11 +222,8 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                 if (task.status === 'completed') {
                     setShowSummary(true);
                     setSummary(task.summary);
-                    setError("");
-                    if (summaryBoxRef.current) {
-                        summaryBoxRef.current.style.display = "flex";
-                        summaryBoxRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
+                    setMessage({});
+                    setShareableLink(task.summary.shareableLink || "");
                     if (onSummaryGenerated) onSummaryGenerated();
                     break;
                 } else if (task.status === 'failed') {
@@ -224,15 +233,14 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
             } catch (err) {
                 setShowSummary(false);
                 setSummary({ keypoints: [], summary: "", timestamps: [] });
-                setError(err.response?.data?.error || err.message || "Summary job failed");
-                if (summaryBoxRef.current) summaryBoxRef.current.style.display = "none";
+                setMessage({ error: err.response?.data?.error || err.message || "Summary job failed" });
                 break;
             }
         }
     };
 
     const toggleDropdown = (option) => {
-        if (uploadedFile && option === "upload") return;
+        if ((uploadedFile || videoUrl.length > 0) && option === "upload") return;
         setOpenDropdown(openDropdown === option ? null : option);
     };
 
@@ -245,9 +253,7 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
     };
 
     const handleCopySummary = () => {
-        console.log("Copy button clicked");
         if (!summaryTextRef.current || !summaryTextRef.current.textContent) {
-            console.warn("No summary text to copy");
             setCopyButtonText("No Text");
             setTimeout(() => {
                 setCopyButtonText("Copy Summary");
@@ -264,13 +270,11 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
             document.execCommand("copy");
             selection.removeAllRanges();
 
-            console.log("Summary copied to clipboard");
             setCopyButtonText("Copied");
             setTimeout(() => {
                 setCopyButtonText("Copy Summary");
             }, 3000);
         } catch (err) {
-            console.error("Copy failed:", err);
             setCopyButtonText("Copy Failed");
             setTimeout(() => {
                 setCopyButtonText("Copy Summary");
@@ -279,14 +283,12 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
     };
 
     const handleDownloadPDF = () => {
-        console.log("Download PDF button clicked");
-        console.log("Current summary for PDF:", summary);
-        if (!summaryBoxRef.current || !summary.summary) {
-            console.warn("No summary content to generate PDF");
+        const summaryBox = document.querySelector('.summary-box');
+        if (!summaryBox || !summary.summary) {
             return;
         }
 
-        const clone = summaryBoxRef.current.cloneNode(true);
+        const clone = summaryBox.cloneNode(true);
         const actions = clone.querySelector('.summary-actions');
         if (actions) actions.remove();
 
@@ -303,14 +305,17 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
         if (showMore) showMore.remove();
 
         const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.width = '210mm';
-        tempContainer.style.padding = '10mm';
-        tempContainer.style.background = '#ffffff';
-        tempContainer.style.color = '#000000';
-        tempContainer.style.opacity = '1';
-        tempContainer.style.fontFamily = 'Arial, sans-serif';
+        const tempContainerStyles = {
+            position: 'absolute',
+            top: '-9999px',
+            width: '210mm',
+            padding: '10mm',
+            background: '#ffffff',
+            color: '#000000',
+            opacity: '1',
+            fontFamily: 'Arial, sans-serif'
+        };
+        Object.assign(tempContainer.style, tempContainerStyles);
 
         clone.querySelectorAll('h3, p, li').forEach(el => {
             el.style.color = '#000000';
@@ -321,19 +326,8 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
         tempContainer.appendChild(clone);
         document.body.appendChild(tempContainer);
 
-        console.log("Temp container styles:", {
-            color: window.getComputedStyle(tempContainer).color,
-            background: window.getComputedStyle(tempContainer).background,
-            opacity: window.getComputedStyle(tempContainer).opacity
-        });
-        console.log("Detailed summary styles:", {
-            color: detailedSummary ? window.getComputedStyle(detailedSummary).color : 'N/A',
-            opacity: detailedSummary ? window.getComputedStyle(detailedSummary).opacity : 'N/A'
-        });
-
         html2canvas(tempContainer, {
             scale: 4,
-            useCORS: true,
             backgroundColor: '#ffffff',
             logging: true,
             imageTimeout: 0,
@@ -363,11 +357,8 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
             }
 
             pdf.save('summary.pdf');
-            console.log("PDF generated and downloaded");
-
             document.body.removeChild(tempContainer);
-        }).catch(err => {
-            console.error("PDF generation failed:", err);
+        }).catch(() => {
             document.body.removeChild(tempContainer);
         });
     };
@@ -401,32 +392,34 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
     const handleFileUpload = (e, type) => {
         const file = e.target.files[0];
         if (file) {
-            console.log("File uploaded:", file.name, "Type:", type);
-            // Revoke previous URL if it exists
+
+            const fileSizeGb = file.size / (1024 * 1024 * 1025);
+            const maxSize = 2;
+
+            if (fileSizeGb > maxSize) {
+                setMessage({ error: `File size exceeds ${maxSize}GB limit for ${type}.` });
+                return;
+            }
+
             if (fileUrl) {
-                console.log("Revoking previous file URL");
                 URL.revokeObjectURL(fileUrl);
             }
             const newFileUrl = URL.createObjectURL(file);
-            console.log("New file URL created:", newFileUrl);
             setUploadedFile(file);
             setFileType(type);
             setFileUrl(newFileUrl);
             setPreviewKey(prev => prev + 1);
             setOpenDropdown(null);
-            videoUrlRef.current = "";
-            setError("");
-            if (errorRef.current) errorRef.current.textContent = "";
-        } else {
-            console.warn("No file selected");
+            setVideoUrl("");
+            setMessage({});
+            setShowSummary(false);
+            setSummary({ keypoints: [], summary: "", timestamps: [] });
         }
     };
 
     const handleRemoveFile = () => {
-        console.log("Removing file, current fileUrl:", fileUrl);
         if (fileUrl) {
             URL.revokeObjectURL(fileUrl);
-            console.log("File URL revoked");
         }
         setUploadedFile(null);
         setFileType(null);
@@ -434,13 +427,58 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
         setPreviewKey(prev => prev + 1);
         setShowSummary(false);
         setSummary({ keypoints: [], summary: "", timestamps: [] });
-        setError("");
-        if (errorRef.current) errorRef.current.textContent = "";
-        if (summaryBoxRef.current) summaryBoxRef.current.style.display = "none";
-        // Reset file inputs
-        if (videoUploadRef.current) videoUploadRef.current.value = "";
-        if (audioUploadRef.current) audioUploadRef.current.value = "";
-        console.log("File removed, state reset");
+        setMessage({});
+        const videoInput = document.getElementById("videoUploadInput");
+        const audioInput = document.getElementById("audioUploadInput");
+        if (videoInput) videoInput.value = "";
+        if (audioInput) audioInput.value = "";
+    };
+
+    const handleCopyLink = async () => {
+        if (!shareableLink) return;
+        await navigator.clipboard.writeText(shareableLink);
+    };
+
+    const handleEmailShare = () => {
+        if (!shareableLink) return;
+        const subject = encodeURIComponent("Here’s a quick summary I made using Youtella");
+        const body = encodeURIComponent(
+            `I summarized this YouTube video using Youtella.\n\nCheck out the key points here: ${shareableLink}\n\nNo signup. Fast. Smart.\n\n– Shared via Youtella`
+        );
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    };
+
+    const handleWhatsAppShare = () => {
+        if (!shareableLink) return;
+        const message = encodeURIComponent(
+            `Here’s the summary I got from this YouTube video using Youtella.\n\n ${shareableLink}`
+        );
+        window.open(`https://wa.me/?text=${message}`, "_blank");
+    };
+
+    const handleTwitterShare = () => {
+        if (!shareableLink) return;
+        const tweet = encodeURIComponent(
+            `Just summarized this video with Youtella — here’s what I got:\n\n ${shareableLink}\n\nThis tool’s a beast.`
+        );
+        window.open(`https://x.com/intent/tweet?text=${tweet}`, "_blank");
+    };
+
+    const handleSlackShare = () => {
+        if (!shareableLink) return;
+        const message = encodeURIComponent(
+            `Here’s the summary I got from this YouTube video using Youtella.\n\n ${shareableLink}`
+        );
+        navigator.clipboard.writeText(message);
+        alert("Message copied! Paste it into your Slack channel.");
+    };
+
+    const handleTextMessageShare = () => {
+        if (!shareableLink) return;
+        const message = encodeURIComponent(
+            `Skipped the whole video and got the good stuff here: ${shareableLink}`
+        );
+        window.location.href = `sms:?body=${message}`;
     };
 
     return (
@@ -449,65 +487,57 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                 <input
                     type="text"
                     placeholder="Paste your link to convert video"
-                    defaultValue={videoUrlRef.current}
+                    value={videoUrl}
                     onChange={handleUrlChange}
                     disabled={isLoading || uploadedFile}
                 />
-                {
-                    subscription === "active" && (
-                        <div className="interactionBtnMobile d-md-none">
-                            <i
-                                className={`bx bx-paperclip ${uploadedFile ? 'disabled' : ''}`}
-                                onClick={() => toggleDropdown("upload")}
-                                style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
-                            >
-                                {openDropdown === "upload" && (
-                                    <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                        <li
-                                            className="uploading-items"
-                                            onTouchStart={() => document.getElementById("videoUpload").click()}
-                                        >
-                                            Upload Video
-                                        </li>
-                                        <li className="uploading-items"
-                                            onTouchStart={() => document.getElementById("audioUpload").click()}
-                                        >
-                                            Upload Audio
-                                        </li>
-                                    </ul>
-                                )}
-                            </i>
-                        </div>
-                    )
-                }
+                <div className="interactionBtnMobile d-md-none">
+                    <i
+                        className={`bx bx-paperclip ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
+                        onClick={() => toggleDropdown("upload")}
+                        style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
+                    >
+                        {openDropdown === "upload" && (
+                            <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                <li
+                                    className="uploading-items"
+                                    onTouchStart={() => triggerFileInput("video")}
+                                >
+                                    Upload Video
+                                </li>
+                                <li
+                                    className="uploading-items"
+                                    onTouchStart={() => triggerFileInput("audio")}
+                                >
+                                    Upload Audio
+                                </li>
+                            </ul>
+                        )}
+                    </i>
+                </div>
                 <div className="interactionBtnWrapper">
-                    {
-                        subscription === "active" && (
-                            <i
-                                className={`bx bx-paperclip d-none d-md-block ${uploadedFile ? 'disabled' : ''}`}
-                                onClick={() => toggleDropdown("upload")}
-                                style={{ pointerEvents: uploadedFile ? 'none' : 'auto' }}
-                            >
-                                {openDropdown === "upload" && (
-                                    <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                        <li className="uploading-items" onClick={() => document.getElementById("videoUpload").click()}>
-                                            Upload Video
-                                        </li>
-                                        <li className="uploading-items" onClick={() => document.getElementById("audioUpload").click()}>
-                                            Upload Audio
-                                        </li>
-                                    </ul>
-                                )}
-                            </i>
-                        )
-                    }
+                    <i
+                        className={`bx bx-paperclip d-none d-md-block ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
+                        onClick={() => toggleDropdown("upload")}
+                        style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
+                    >
+                        {openDropdown === "upload" && (
+                            <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                <li className="uploading-items" onClick={() => triggerFileInput("video")}>
+                                    Upload Video
+                                </li>
+                                <li className="uploading-items" onClick={() => triggerFileInput("audio")}>
+                                    Upload Audio
+                                </li>
+                            </ul>
+                        )}
+                    </i>
                     <button
                         className="getSummaryBtn"
                         type="submit"
-                        ref={buttonRef}
                         disabled={isLoading}
                     >
-                        Get Summary
+                        {isLoading ? "Loading..." : "Get Summary"}
                     </button>
                 </div>
             </form>
@@ -543,46 +573,44 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                     )}
                 </div>
             )}
-            <div className="form-text text-danger" ref={errorRef}></div>
-            {subscription === "active" && (
-                <div className="options-container">
-                    {["Language", "Length", "Tone"].map((option) => (
-                        <div className="dropdown-wrapper" key={option}>
-                            <div className="buttonNIcon" onClick={() => toggleDropdown(option)}>
-                                <div className="iconWrapper">
-                                    <img
-                                        src={
-                                            option === "Language"
-                                                ? language
-                                                : option === "Length"
-                                                    ? lengthIcon
-                                                    : toneIcon
-                                        }
-                                        alt={`Select ${option}`}
-                                    />
-                                </div>
-                                <p className="option-btn">{selectedOptions[option]}</p>
+            <div className="form-text text-danger">{message.error || message.success}</div>
+            <div className="options-container">
+                {["Language", "Length", "Tone"].map((option) => (
+                    <div className="dropdown-wrapper" key={option}>
+                        <div className="buttonNIcon" onClick={() => toggleDropdown(option)}>
+                            <div className="iconWrapper">
+                                <img
+                                    src={
+                                        option === "Language"
+                                            ? language
+                                            : option === "Length"
+                                                ? lengthIcon
+                                                : toneIcon
+                                    }
+                                    alt={`Select ${option}`}
+                                />
                             </div>
-                            {openDropdown === option && (
-                                <ul
-                                    className="dropdownMenu"
-                                    ref={(el) => (dropdownRefs.current[option] = el)}
-                                >
-                                    {options[option].map((value) => (
-                                        <li
-                                            key={value}
-                                            className="dropdown-item"
-                                            onClick={() => handleOptionSelect(option, value)}
-                                        >
-                                            {value}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                            <p className="option-btn">{selectedOptions[option]}</p>
                         </div>
-                    ))}
-                </div>
-            )}
+                        {openDropdown === option && (
+                            <ul
+                                className="dropdownMenu"
+                                ref={(el) => (dropdownRefs.current[option] = el)}
+                            >
+                                {options[option].map((value) => (
+                                    <li
+                                        key={value}
+                                        className="dropdownitem"
+                                        onClick={() => handleOptionSelect(option, value)}
+                                    >
+                                        {value}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                ))}
+            </div>
             {isLoading && (
                 <div className="loading-section">
                     <div className="progress-bar-container">
@@ -606,7 +634,6 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
             )}
             <div
                 className="summary-box"
-                ref={summaryBoxRef}
                 style={{ display: showSummary ? "flex" : "none" }}
             >
                 <div className="summary-actions">
@@ -626,10 +653,50 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                         <i className='bx bxs-download' aria-hidden="true"></i>
                         <span>Download PDF</span>
                     </button>
-                    <button className="save-btn">
-                        <i className='bx bx-envelope' aria-hidden="true"></i>
-                        <span>Email to self</span>
-                    </button>
+                    <div className="dropdown">
+                        <button type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i className="bx bx-share-alt"></i>
+                            <span>Share</span>
+                        </button>
+                        <ul className="dropdown-menu">
+                            <li className="dropdown-item" onClick={handleCopyLink}>
+                                <div className="dropiconTextWrapper">
+                                    <i className="bx bx-link"></i>
+                                    Copy Sharable Link
+                                </div>
+                            </li>
+                            <li className="dropdown-item" onClick={handleEmailShare}>
+                                <div className="dropiconTextWrapper">
+                                    <i className="bx bx-envelope"></i>
+                                    Email This to Someone
+                                </div>
+                            </li>
+                            <li className="dropdown-item" onClick={handleWhatsAppShare}>
+                                <div className="dropiconTextWrapper">
+                                    <i className="bx bxl-whatsapp"></i>
+                                    Send via WhatsApp
+                                </div>
+                            </li>
+                            <li className="dropdown-item" onClick={handleTwitterShare}>
+                                <div className="dropiconTextWrapper">
+                                    <img src={xIcon} alt="X Icon" />
+                                    Post on Twitter/X
+                                </div>
+                            </li>
+                            <li className="dropdown-item" onClick={handleSlackShare}>
+                                <div className="dropiconTextWrapper">
+                                    <i className="bx bxl-slack"></i>
+                                    Slack Message
+                                </div>
+                            </li>
+                            <li className="dropdown-item" onClick={handleTextMessageShare}>
+                                <div className="dropiconTextWrapper">
+                                    <i className="bx bx-chat"></i>
+                                    Text Message
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <div className="quick-summary">
                     <h3>
@@ -652,45 +719,40 @@ export default function Interaction({ subHeading, subscription, selectedSummary,
                         {expand ? "Show less" : "Show more"}
                     </Link>
                 </div>
-                {subscription === "active" && (
-                    <div className="timestamp-breakdown">
-                        <h3>
-                            <img src={playIcon} alt="Play Icon" />
-                            Timestamp Breakdown
-                        </h3>
-                        <ul>
-                            {summary.timestamps && summary.timestamps.map((timestamp, index) => (
-                                <li key={index}>{timestamp}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                <div className="timestamp-breakdown">
+                    <h3>
+                        <img src={playIcon} alt="Play Icon" />
+                        Timestamp Breakdown
+                    </h3>
+                    <ul>
+                        {summary.timestamps && summary.timestamps.map((timestamp, index) => (
+                            <li key={index}>{timestamp}</li>
+                        ))}
+                    </ul>
+                </div>
             </div>
             <input
-                id="videoUpload"
+                id="videoUploadInput"
                 type="file"
                 accept="video/*"
                 style={{ display: "none" }}
                 onChange={(e) => handleFileUpload(e, "video")}
                 disabled={uploadedFile}
-                ref={videoUploadRef}
             />
             <input
-                id="audioUpload"
+                id="audioUploadInput"
                 type="file"
                 accept="audio/*"
                 style={{ display: "none" }}
                 onChange={(e) => handleFileUpload(e, "audio")}
                 disabled={uploadedFile}
-                ref={audioUploadRef}
             />
         </div>
     );
 }
 
-Interaction.propTypes = {
+PaidInteraction.propTypes = {
     subHeading: PropTypes.string.isRequired,
-    subscription: PropTypes.string.isRequired,
     selectedSummary: PropTypes.object,
     onSummaryGenerated: PropTypes.func,
     onGenerateSummaryRequest: PropTypes.func

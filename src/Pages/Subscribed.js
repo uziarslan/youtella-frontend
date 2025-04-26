@@ -1,10 +1,10 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react';
 import Sidebar from '../Components/Sidebar';
-import Interaction from '../Components/Interaction';
 import Settings from '../Components/Settings';
 import axiosInstance from '../services/axiosInstance';
 import { AuthContext } from '../Context/AuthContext';
 import profile from '../Assets/images/profile.png';
+import PaidInteraction from '../Components/PaidInteraction';
 
 export default function Subscribed() {
     const [activeComponent, setActiveComponent] = useState('interaction');
@@ -86,10 +86,9 @@ export default function Subscribed() {
 
             <div className="main-content">
                 {activeComponent === 'interaction' ? (
-                    <Interaction
+                    <PaidInteraction
                         key={resetKey}
-                        subHeading="Supported format: YouTube, Zoom recorded meetings"
-                        subscription={user.subscriptionStatus}
+                        subHeading="Supported format: YouTube, Upto 2GB of video and 2GB of audio"
                         selectedSummary={selectedSummary}
                         onSummaryGenerated={handleSummaryGenerated}
                     />
