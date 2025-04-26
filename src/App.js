@@ -30,7 +30,7 @@ function App() {
     <BrowserRouter>
       <div>
         <Routes>
-          <Route path="/chat" element={<Inactive />} />
+          {/* <Route path="/chat" element={<Inactive />} /> */}
           <Route path="/chat/:id" element={<ChatRoute />} />
           <Route path="/pricing" element={<Price />} />
           <Route path="/signup" element={<Signup />} />
