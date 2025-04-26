@@ -659,37 +659,55 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                             <span>Share</span>
                         </button>
                         <ul className="dropdown-menu">
-                            <li className="dropdown-item" onClick={handleCopyLink} onTouchStart={handleCopyLink}>
+                            <li className="dropdown-item" onClick={handleCopyLink} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleCopyLink();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-link"></i>
                                     Copy Sharable Link
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleEmailShare} onTouchStart={handleEmailShare}>
+                            <li className="dropdown-item" onClick={handleEmailShare} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleEmailShare();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-envelope"></i>
                                     Email This to Someone
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleWhatsAppShare} onTouchStart={handleWhatsAppShare}>
+                            <li className="dropdown-item" onClick={handleWhatsAppShare} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleWhatsAppShare();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bxl-whatsapp"></i>
                                     Send via WhatsApp
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleTwitterShare} onTouchStart={handleTwitterShare}>
+                            <li className="dropdown-item" onClick={handleTwitterShare} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleTwitterShare();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <img src={xIcon} alt="X Icon" />
                                     Post on Twitter/X
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleSlackShare} onTouchStart={handleSlackShare}>
+                            <li className="dropdown-item" onClick={handleSlackShare} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleSlackShare();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bxl-slack"></i>
                                     Slack Message
                                 </div>
                             </li>
-                            <li className="dropdown-item" onClick={handleTextMessageShare} onTouchStart={handleTextMessageShare}>
+                            <li className="dropdown-item" onClick={handleTextMessageShare} onTouchStart={(e) => {
+                                e.preventDefault();
+                                handleTextMessageShare();
+                            }}>
                                 <div className="dropiconTextWrapper">
                                     <i className="bx bx-chat"></i>
                                     Text Message
