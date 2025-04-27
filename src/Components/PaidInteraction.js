@@ -659,7 +659,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                             <span>Share</span>
                         </button>
                         <ul className="dropdown-menu">
-                            <li className="dropdown-item" onClick={handleCopyLink} onTouchStart={(e) => {
+                            <button className="dropdown-item" onClick={handleCopyLink} onTouchStart={(e) => {
                                 e.preventDefault();
                                 handleCopyLink();
                             }}>
@@ -667,7 +667,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                                     <i className="bx bx-link"></i>
                                     Copy Sharable Link
                                 </div>
-                            </li>
+                            </button>
                             <li className="dropdown-item" onClick={handleEmailShare} onTouchStart={(e) => {
                                 e.preventDefault();
                                 handleEmailShare();
