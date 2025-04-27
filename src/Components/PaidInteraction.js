@@ -439,30 +439,30 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
         await navigator.clipboard.writeText(shareableLink);
     };
 
-    const handleEmailShare = () => {
-        if (!shareableLink) return;
-        const subject = encodeURIComponent("Here’s a quick summary I made using Youtella");
-        const body = encodeURIComponent(
-            `I summarized this YouTube video using Youtella.\n\nCheck out the key points here: ${shareableLink}\n\nNo signup. Fast. Smart.\n\n– Shared via Youtella`
-        );
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    };
+    // const handleEmailShare = () => {
+    //     if (!shareableLink) return;
+    //     const subject = encodeURIComponent("Here’s a quick summary I made using Youtella");
+    //     const body = encodeURIComponent(
+    //         `I summarized this YouTube video using Youtella.\n\nCheck out the key points here: ${shareableLink}\n\nNo signup. Fast. Smart.\n\n– Shared via Youtella`
+    //     );
+    //     window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    // };
 
-    const handleWhatsAppShare = () => {
-        if (!shareableLink) return;
-        const message = encodeURIComponent(
-            `Here’s the summary I got from this YouTube video using Youtella.\n\n ${shareableLink}`
-        );
-        window.open(`https://wa.me/?text=${message}`, "_blank");
-    };
+    // const handleWhatsAppShare = () => {
+    //     if (!shareableLink) return;
+    //     const message = encodeURIComponent(
+    //         `Here’s the summary I got from this YouTube video using Youtella.\n\n ${shareableLink}`
+    //     );
+    //     window.open(`https://wa.me/?text=${message}`, "_blank");
+    // };
 
-    const handleTwitterShare = () => {
-        if (!shareableLink) return;
-        const tweet = encodeURIComponent(
-            `Just summarized this video with Youtella — here’s what I got:\n\n ${shareableLink}\n\nThis tool’s a beast.`
-        );
-        window.open(`https://x.com/intent/tweet?text=${tweet}`, "_blank");
-    };
+    // const handleTwitterShare = () => {
+    //     if (!shareableLink) return;
+    //     const tweet = encodeURIComponent(
+    //         `Just summarized this video with Youtella — here’s what I got:\n\n ${shareableLink}\n\nThis tool’s a beast.`
+    //     );
+    //     window.open(`https://x.com/intent/tweet?text=${tweet}`, "_blank");
+    // };
 
     const handleSlackShare = () => {
         if (!shareableLink) return;
@@ -473,13 +473,13 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
         alert("Message copied! Paste it into your Slack channel.");
     };
 
-    const handleTextMessageShare = () => {
-        if (!shareableLink) return;
-        const message = encodeURIComponent(
-            `Skipped the whole video and got the good stuff here: ${shareableLink}`
-        );
-        window.location.href = `sms:?body=${message}`;
-    };
+    // const handleTextMessageShare = () => {
+    //     if (!shareableLink) return;
+    //     const message = encodeURIComponent(
+    //         `Skipped the whole video and got the good stuff here: ${shareableLink}`
+    //     );
+    //     window.location.href = `sms:?body=${message}`;
+    // };
 
     return (
         <div className="interactionContainer">
@@ -659,59 +659,99 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                             <span>Share</span>
                         </button>
                         <ul className="dropdown-menu">
-                            <button className="dropdown-item" onClick={handleCopyLink} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleCopyLink();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <i className="bx bx-link"></i>
-                                    Copy Sharable Link
-                                </div>
-                            </button>
-                            <li className="dropdown-item" onClick={handleEmailShare} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleEmailShare();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <i className="bx bx-envelope"></i>
-                                    Email This to Someone
-                                </div>
+                            <li>
+                                <Link
+                                    className="dropdown-item"
+                                    to="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleCopyLink();
+                                    }}
+                                    aria-label="Copy Sharable Link"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <i className="bx bx-link"></i>
+                                        Copy Sharable Link
+                                    </div>
+                                </Link>
                             </li>
-                            <li className="dropdown-item" onClick={handleWhatsAppShare} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleWhatsAppShare();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <i className="bx bxl-whatsapp"></i>
-                                    Send via WhatsApp
-                                </div>
+                            <li>
+                                <a
+                                    className="dropdown-item"
+                                    href={`mailto:?subject=${encodeURIComponent(
+                                        "Here’s a quick summary I made using Youtella"
+                                    )}&body=${encodeURIComponent(
+                                        `I summarized this YouTube video using Youtella.\n\nCheck out the key points here: ${shareableLink}\n\nNo signup. Fast. Smart.\n\n– Shared via Youtella`
+                                    )}`}
+                                    aria-label="Email This to Someone"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <i className="bx bx-envelope"></i>
+                                        Email This to Someone
+                                    </div>
+                                </a>
                             </li>
-                            <li className="dropdown-item" onClick={handleTwitterShare} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleTwitterShare();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <img src={xIcon} alt="X Icon" />
-                                    Post on Twitter/X
-                                </div>
+                            <li>
+                                <a
+                                    className="dropdown-item"
+                                    href={`https://wa.me/?text=${encodeURIComponent(
+                                        `Here’s the summary I got from this YouTube video using Youtella.\n\n ${shareableLink}`
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Send via WhatsApp"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <i className="bx bxl-whatsapp"></i>
+                                        Send via WhatsApp
+                                    </div>
+                                </a>
                             </li>
-                            <li className="dropdown-item" onClick={handleSlackShare} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleSlackShare();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <i className="bx bxl-slack"></i>
-                                    Slack Message
-                                </div>
+                            <li>
+                                <a
+                                    className="dropdown-item"
+                                    href={`https://x.com/intent/tweet?text=${encodeURIComponent(
+                                        `Just summarized this video with Youtella — here’s what I got:\n\n ${shareableLink}\n\nThis tool’s a beast.`
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Post on Twitter/X"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <img src={xIcon} alt="X Icon" />
+                                        Post on Twitter/X
+                                    </div>
+                                </a>
                             </li>
-                            <li className="dropdown-item" onClick={handleTextMessageShare} onTouchStart={(e) => {
-                                e.preventDefault();
-                                handleTextMessageShare();
-                            }}>
-                                <div className="dropiconTextWrapper">
-                                    <i className="bx bx-chat"></i>
-                                    Text Message
-                                </div>
+                            <li>
+                                <Link
+                                    className="dropdown-item"
+                                    to="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleSlackShare();
+                                    }}
+                                    aria-label="Slack Message"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <i className="bx bxl-slack"></i>
+                                        Slack Message
+                                    </div>
+                                </Link>
+                            </li>
+                            <li>
+                                <a
+                                    className="dropdown-item"
+                                    href={`sms:?body=${encodeURIComponent(
+                                        `Skipped the whole video and got the good stuff here: ${shareableLink}`
+                                    )}`}
+                                    aria-label="Text Message"
+                                >
+                                    <div className="dropiconTextWrapper">
+                                        <i className="bx bx-chat"></i>
+                                        Text Message
+                                    </div>
+                                </a>
                             </li>
                         </ul>
                     </div>
