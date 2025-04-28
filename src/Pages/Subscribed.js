@@ -5,6 +5,7 @@ import axiosInstance from '../services/axiosInstance';
 import { AuthContext } from '../Context/AuthContext';
 import profile from '../Assets/images/profile.png';
 import PaidInteraction from '../Components/PaidInteraction';
+import ChatBot from '../Components/Chatbot';
 
 export default function Subscribed() {
     const [activeComponent, setActiveComponent] = useState('interaction');
@@ -99,6 +100,8 @@ export default function Subscribed() {
                     />
                 )}
             </div>
+
+            <ChatBot />
         </div>
     );
 }

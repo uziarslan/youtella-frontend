@@ -282,7 +282,7 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
                     disabled={isLoading || uploadedFile}
                 />
                 {
-                    subscription === "Test" &&
+                    subscription !== "Test" &&
                     <div className="interactionBtnMobile d-md-none">
                         <i
                             className={`bx bx-paperclip ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}

@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
 import Modal from '../Components/Modal';
 import FreeTestInteraction from '../Components/FreeTestInteraction';
+import { AuthContext } from '../Context/AuthContext';
 
 export default function Inactive() {
     const [canUseInactive, setCanUseInactive] = useState(false);
     const [showTrialModal, setShowTrialModal] = useState(false);
     const [hasGeneratedSummary, setHasGeneratedSummary] = useState(false);
     const [pendingNavigation, setPendingNavigation] = useState(null);
+    const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -52,6 +54,11 @@ export default function Inactive() {
         }
         setShowTrialModal(false);
     };
+
+    if (user?._id) {
+        navigate(`/chat/${user._id}`);
+        return null;
+    }
 
     return (
         <>

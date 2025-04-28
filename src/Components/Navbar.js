@@ -16,7 +16,7 @@ export default function Navbar() {
     return (
         <nav className="navbar navbar-expand-lg max-width">
             <div className="container-fluid">
-                <Link to="/">
+                <Link to={user?._id ? `/chat/${user._id}` : "/"}>
                     <img src={logo} alt="Logo" className="logo" />
                 </Link>
                 {user?.subscriptionStatus !== "active" ? (
