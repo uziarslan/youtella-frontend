@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
-import Interaction from '../Components/Interaction';
 import Modal from '../Components/Modal';
+import FreeTestInteraction from '../Components/FreeTestInteraction';
 
 export default function Inactive() {
     const [canUseInactive, setCanUseInactive] = useState(false);
@@ -58,7 +58,7 @@ export default function Inactive() {
             <Navbar />
             <div className="basic-body">
                 {canUseInactive && (
-                    <Interaction
+                    <FreeTestInteraction
                         subHeading="Supported format: Youtube"
                         subscription="Test"
                         onSummaryGenerated={handleSummaryGenerated}
@@ -79,7 +79,7 @@ export default function Inactive() {
                     <button
                         type="button"
                         className="outlineBtn"
-                        onClick={() => handleNavigate('/')}
+                        onClick={() => handleNavigate('/login')}
                     >
                         Login
                     </button>

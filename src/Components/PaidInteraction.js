@@ -14,7 +14,7 @@ import audioSvg from "../Assets/images/audio.svg";
 import xIcon from "../Assets/images/x-icon.svg";
 
 
-export default function PaidInteraction({ subHeading, selectedSummary, onSummaryGenerated, onGenerateSummaryRequest }) {
+export default function PaidInteraction({ subHeading, selectedSummary }) {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [expand, setExpand] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState({
@@ -29,7 +29,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
     const [progress, setProgress] = useState(0);
     const [estimatedTime, setEstimatedTime] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
-    const [summary, setSummary] = useState({ keypoints: [], summary: "", timestamps: [] });
+    const [summary, setSummary] = useState({});
     const [message, setMessage] = useState({});
     const [copyButtonText, setCopyButtonText] = useState("Copy Summary");
     const [previewKey, setPreviewKey] = useState(0);
@@ -71,11 +71,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
     useEffect(() => {
         if (selectedSummary) {
             setShowSummary(true);
-            setSummary({
-                keypoints: selectedSummary.keypoints || [],
-                summary: selectedSummary.summary || [],
-                timestamps: selectedSummary.timestamps || []
-            });
+            setSummary(selectedSummary);
             setSelectedOptions({
                 Language: mapLanguage(selectedSummary.language || "english"),
                 Length: mapLength(selectedSummary.summaryLength || "medium"),
@@ -140,7 +136,13 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
 
     const handleGetSummary = async (event) => {
         event.preventDefault();
-        setMessage({})
+        setMessage({});
+        setShowSummary(false);
+        setSummary({});
+        setProgress(0);
+        setEstimatedTime(0);
+        setCopyButtonText("Copy Summary");
+        if (isLoading) return;
 
         if (!videoUrl && !uploadedFile) {
             setMessage({ error: "Please paste a YouTube video URL or upload a file" });
@@ -155,10 +157,6 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                 setMessage({ error: `File size exceeds ${maxSize}GB limit for ${fileType}.` });
                 return;
             }
-        }
-
-        if (onGenerateSummaryRequest && !onGenerateSummaryRequest()) {
-            return;
         }
 
         setIsLoading(true);
@@ -195,7 +193,6 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                 setShowSummary(true);
                 setSummary(summary);
                 setShareableLink(shareableLink || "");
-                if (onSummaryGenerated) onSummaryGenerated();
             } else {
                 await pollForSummary(taskId);
             }
@@ -224,15 +221,15 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                     setSummary(task.summary);
                     setMessage({});
                     setShareableLink(task.summary.shareableLink || "");
-                    if (onSummaryGenerated) onSummaryGenerated();
-                    break;
                 } else if (task.status === 'failed') {
                     throw new Error(task.error);
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
             } catch (err) {
                 setShowSummary(false);
-                setSummary({ keypoints: [], summary: "", timestamps: [] });
+                setSummary({ keypoints: [], summary: "", timestamps: [], thumbnailUrl: "", videoTimestamp: "" });
+                setProgress(0);
+                setEstimatedTime(0);
                 setMessage({ error: err.response?.data?.error || err.message || "Summary job failed" });
                 break;
             }
@@ -284,12 +281,14 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
 
     const handleDownloadPDF = () => {
         const summaryBox = document.querySelector('.summary-box');
-        if (!summaryBox || !summary.summary) {
+        if (!summaryBox || !summary.summaryText) {
             return;
         }
 
         const clone = summaryBox.cloneNode(true);
         const actions = clone.querySelector('.summary-actions');
+        const videoDescription = clone.querySelector('.summary-video');
+        if (videoDescription) videoDescription.remove();
         if (actions) actions.remove();
 
         const detailedSummary = clone.querySelector('.detailed-summary p');
@@ -698,13 +697,35 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                         </ul>
                     </div>
                 </div>
+                {
+                    summary?.thumbnailUrl && (
+                        <div className="summary-video">
+                            <div className="video-description">
+                                <h5 className="video-title">{summary?.summaryTitle}</h5>
+                                <div className="videoTimeStamp">
+                                    <div className="videoText">
+                                        Video
+                                    </div>
+                                    <div className="videoTime">
+                                        0:00/{summary?.videoTimestamp}
+                                    </div>
+                                </div>
+                            </div>
+                            <img
+                                className="summary-thumbnail"
+                                src={summary?.thumbnailUrl}
+                                alt="Video Thumbnail"
+                            />
+                        </div>
+                    )
+                }
                 <div className="quick-summary">
                     <h3>
                         <img src={diamondIcon} alt="Diamond Icon" />
                         Quick Summary
                     </h3>
                     <ul>
-                        {summary.keypoints && summary.keypoints.map((point, index) => (
+                        {summary?.keypoints && summary?.keypoints?.map((point, index) => (
                             <li key={index}>{point}</li>
                         ))}
                     </ul>
@@ -714,7 +735,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                         <img src={documentIcon} alt="Document Icon" />
                         Detailed Summary
                     </h3>
-                    <p ref={summaryTextRef} className={expand ? "show" : ""}>{summary.summary}</p>
+                    <p ref={summaryTextRef} className={expand ? "show" : ""}>{summary?.summaryText}</p>
                     <Link className="show-more" onClick={() => setExpand(!expand)}>
                         {expand ? "Show less" : "Show more"}
                     </Link>
@@ -725,7 +746,7 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                         Timestamp Breakdown
                     </h3>
                     <ul>
-                        {summary.timestamps && summary.timestamps.map((timestamp, index) => (
+                        {summary?.timestamps && summary?.timestamps?.map((timestamp, index) => (
                             <li key={index}>{timestamp}</li>
                         ))}
                     </ul>
@@ -754,6 +775,4 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
 PaidInteraction.propTypes = {
     subHeading: PropTypes.string.isRequired,
     selectedSummary: PropTypes.object,
-    onSummaryGenerated: PropTypes.func,
-    onGenerateSummaryRequest: PropTypes.func
 };

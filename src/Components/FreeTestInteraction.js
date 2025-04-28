@@ -8,14 +8,14 @@ import PropTypes from "prop-types";
 import audioSvg from "../Assets/images/audio.svg";
 
 
-export default function FreeTestInteraction({ subHeading, subscription }) {
+export default function FreeTestInteraction({ subHeading, subscription, onSummaryGenerated, onGenerateSummaryRequest }) {
     const [videoUrl, setVideoUrl] = useState("");
     const [expand, setExpand] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [estimatedTime, setEstimatedTime] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
-    const [summary, setSummary] = useState({ keypoints: [], summary: "", timestamps: [] });
+    const [summary, setSummary] = useState({});
     const [message, setMessage] = useState({});
     const [copyText, setCopyText] = useState(false);
     const [shareableLink, setShareableLink] = useState("");
@@ -33,7 +33,7 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
     const handleUrlChange = (e) => {
         setVideoUrl(e.target.value);
         setShowSummary(false);
-        setSummary({ keypoints: [], summary: "", timestamps: [] });
+        setSummary({});
         setMessage({});
         setProgress(0);
         setEstimatedTime(0);
@@ -43,6 +43,12 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
     const handleGetSummary = async (event) => {
         event.preventDefault();
         setMessage({});
+        setShowSummary(false);
+        setSummary({});
+        setShareableLink("");
+        setProgress(0);
+        setEstimatedTime(0);
+        if (isLoading) return;
 
         if (!videoUrl && !uploadedFile) {
             setMessage({ error: "Please paste a YouTube video URL or upload a file" });
@@ -57,6 +63,11 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                 setMessage({ error: `File size exceeds ${maxSize}MB limit for ${fileType}.` });
                 return
             }
+        }
+
+        if (onSummaryGenerated && !onGenerateSummaryRequest()) {
+            setMessage({ error: "You have already generated a summary. Please login to continue." });
+            return;
         }
 
         setIsLoading(true);
@@ -88,12 +99,13 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                 setShowSummary(true);
                 setSummary(summary);
                 setShareableLink(shareableLink || "");
+                if (onSummaryGenerated) onSummaryGenerated();
             } else {
                 await pollForSummary(taskId);
             }
         } catch (err) {
             setShowSummary(false);
-            setSummary({ keypoints: [], summary: "", timestamps: [] });
+            setSummary({});
             setMessage({ error: err.response?.data?.error || err.message || "Failed to fetch summary" });
         } finally {
             setIsLoading(false);
@@ -113,6 +125,7 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                     setShowSummary(true);
                     setSummary(task.summary);
                     setShareableLink(task.summary.shareableLink || "");
+                    if (onSummaryGenerated) onSummaryGenerated();
                     setMessage({});
                     break;
                 }
@@ -120,7 +133,7 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                 await new Promise((resolve) => setTimeout(resolve, 2000));
             } catch (err) {
                 setShowSummary(false);
-                setSummary({ keypoints: [], summary: "", timestamps: [] });
+                setSummary({});
                 setMessage({ error: err.response?.data?.error || "Summary job failed" });
                 break;
             }
@@ -211,7 +224,7 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
         setFileUrl(null);
         setPreviewKey(prev => prev + 1);
         setShowSummary(false);
-        setSummary({ keypoints: [], summary: "", timestamps: [] });
+        setSummary({});
         setMessage({});
         const videoInput = document.getElementById("videoUploadInput");
         const audioInput = document.getElementById("audioUploadInput");
@@ -254,7 +267,7 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
             setVideoUrl("");
             setMessage({});
             setShowSummary(false);
-            setSummary({ keypoints: [], summary: "", timestamps: [] });
+            setSummary({});
         }
     };
 
@@ -268,47 +281,52 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                     onChange={handleUrlChange}
                     disabled={isLoading || uploadedFile}
                 />
-                <div className="interactionBtnMobile d-md-none">
-                    <i
-                        className={`bx bx-paperclip ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
-                        onClick={() => toggleDropdown("upload")}
-                        style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
-                    >
-                        {openDropdown === "upload" && (
-                            <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                <li
-                                    className="uploading-items"
-                                    onTouchStart={() => triggerFileInput("video")}
-                                >
-                                    Upload Video
-                                </li>
-                                <li
-                                    className="uploading-items"
-                                    onTouchStart={() => triggerFileInput("audio")}
-                                >
-                                    Upload Audio
-                                </li>
-                            </ul>
-                        )}
-                    </i>
-                </div>
+                {
+                    subscription === "Test" &&
+                    <div className="interactionBtnMobile d-md-none">
+                        <i
+                            className={`bx bx-paperclip ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
+                            onClick={() => toggleDropdown("upload")}
+                            style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
+                        >
+                            {openDropdown === "upload" && (
+                                <ul className="inputsDropdown" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                    <li
+                                        className="uploading-items"
+                                        onTouchStart={() => triggerFileInput("video")}
+                                    >
+                                        Upload Video
+                                    </li>
+                                    <li
+                                        className="uploading-items"
+                                        onTouchStart={() => triggerFileInput("audio")}
+                                    >
+                                        Upload Audio
+                                    </li>
+                                </ul>
+                            )}
+                        </i>
+                    </div>
+                }
                 <div className="interactionBtnWrapper">
-                    <i
-                        className={`bx bx-paperclip d-none d-md-block ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
-                        onClick={() => toggleDropdown("upload")}
-                        style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
-                    >
-                        {openDropdown === "upload" && (
-                            <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
-                                <li className="uploading-items" onClick={() => triggerFileInput("video")}>
-                                    Upload Video
-                                </li>
-                                <li className="uploading-items" onClick={() => triggerFileInput("audio")}>
-                                    Upload Audio
-                                </li>
-                            </ul>
-                        )}
-                    </i>
+                    {subscription !== "Test" &&
+                        <i
+                            className={`bx bx-paperclip d-none d-md-block ${uploadedFile || videoUrl.length > 0 ? 'disabled' : ''}`}
+                            onClick={() => toggleDropdown("upload")}
+                            style={{ pointerEvents: uploadedFile || videoUrl.length > 0 ? 'none' : 'auto' }}
+                        >
+                            {openDropdown === "upload" && (
+                                <ul className="inputsDropdown d-none d-md-flex" ref={(el) => (dropdownRefs.current["upload"] = el)}>
+                                    <li className="uploading-items" onClick={() => triggerFileInput("video")}>
+                                        Upload Video
+                                    </li>
+                                    <li className="uploading-items" onClick={() => triggerFileInput("audio")}>
+                                        Upload Audio
+                                    </li>
+                                </ul>
+                            )}
+                        </i>
+                    }
                     <button
                         className="getSummaryBtn"
                         type="submit"
@@ -432,13 +450,35 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                         </ul>
                     </div>
                 </div>
+                {
+                    summary?.thumbnailUrl && (
+                        <div className="summary-video">
+                            <div className="video-description">
+                                <h5 className="video-title">{summary?.summaryTitle}</h5>
+                                <div className="videoTimeStamp">
+                                    <div className="videoText">
+                                        Video
+                                    </div>
+                                    <div className="videoTime">
+                                        0:00/{summary?.videoTimestamp}
+                                    </div>
+                                </div>
+                            </div>
+                            <img
+                                className="summary-thumbnail"
+                                src={summary?.thumbnailUrl}
+                                alt="Video Thumbnail"
+                            />
+                        </div>
+                    )
+                }
                 <div className="quick-summary">
                     <h3>
                         <img src={diamondIcon} alt="Diamond Icon" />
                         Quick Summary
                     </h3>
                     <ul>
-                        {summary.keypoints?.map((point, index) => (
+                        {summary?.keypoints?.map((point, index) => (
                             <li key={index}>{point}</li>
                         ))}
                     </ul>
@@ -449,29 +489,34 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
                         Detailed Summary
                     </h3>
                     <p ref={summaryTextRef} className={expand ? "show" : ""}>
-                        {summary.summary}
+                        {summary?.summaryText}
                     </p>
                     <Link className="show-more" onClick={() => setExpand(!expand)}>
                         {expand ? "Show less" : "Show more"}
                     </Link>
                 </div>
             </div>
-            <input
-                id="videoUploadInput"
-                type="file"
-                accept="video/*"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileUpload(e, "video")}
-                disabled={uploadedFile}
-            />
-            <input
-                id="audioUploadInput"
-                type="file"
-                accept="audio/*"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileUpload(e, "audio")}
-                disabled={uploadedFile}
-            />
+            {subscription !== "Test" && (
+                <>
+                    <input
+                        id="videoUploadInput"
+                        type="file"
+                        accept="video/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => handleFileUpload(e, "video")}
+                        disabled={uploadedFile}
+                    />
+                    <input
+                        id="audioUploadInput"
+                        type="file"
+                        accept="audio/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => handleFileUpload(e, "audio")}
+                        disabled={uploadedFile}
+                    />
+                </>
+            )
+            }
         </div>
     );
 }
@@ -479,4 +524,6 @@ export default function FreeTestInteraction({ subHeading, subscription }) {
 FreeTestInteraction.propTypes = {
     subHeading: PropTypes.string.isRequired,
     subscription: PropTypes.string.isRequired,
+    onSummaryGenerated: PropTypes.func,
+    onGenerateSummaryRequest: PropTypes.func
 };

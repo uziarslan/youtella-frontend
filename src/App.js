@@ -11,8 +11,8 @@ import { useContext } from 'react';
 import { AuthContext } from './Context/AuthContext'; // Adjust path as needed
 import Success from './Pages/Success';
 import Cancel from './Pages/Cancel';
-// import Inactive from './Pages/Inactive';
 import Share from './Pages/Share';
+import Inactive from './Pages/Inactive';
 
 // Wrapper component to handle /chat/:id rendering
 function ChatRoute() {
@@ -31,10 +31,11 @@ function App() {
       <div>
         <Routes>
           {/* <Route path="/chat" element={<Inactive />} /> */}
+          <Route path="/" element={<Inactive />} />
           <Route path="/chat/:id" element={<ChatRoute />} />
           <Route path="/pricing" element={<Price />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/share/:sharename" element={<Share />} />
           <Route path="/forgot-password" element={<Forgot />} />
           <Route path="/verify-code" element={<Code />} />

@@ -41,9 +41,7 @@ export default function Subscribed() {
 
     const handleSummarySelect = useCallback(async (summaryId) => {
         try {
-            const response = await axiosInstance.get(`/api/summary/${summaryId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const response = await axiosInstance.get(`/api/summary/${summaryId}`,);
             setSelectedSummary(response.data);
             setActiveComponent('interaction');
             setIsSidebarOpen(false);

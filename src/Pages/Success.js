@@ -57,7 +57,7 @@ export default function Success() {
                     if (userId) {
                         navigate(`/chat/${userId}`);
                     } else {
-                        navigate("/");
+                        navigate("/login");
                     }
                 }, 3000);
 

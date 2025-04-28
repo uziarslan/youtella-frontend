@@ -13,9 +13,9 @@ export default function Basic() {
         if (isLoading) return;
 
         if (!user) {
-            navigate("/");
+            navigate("/login");
         } else if (user._id !== id) {
-            navigate("/");
+            navigate("/login");
         }
 
     }, [user, id, navigate, isLoading]);

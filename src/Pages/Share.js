@@ -11,7 +11,7 @@ import xIcon from "../Assets/images/x-icon.svg";
 export default function Share() {
     const { sharename } = useParams();
     const [expand, setExpand] = useState(false);
-    const [summary, setSummary] = useState({ keypoints: [], summary: "", timestamps: [] });
+    const [summary, setSummary] = useState({});
     const { isLoading, setIsLoading } = useContext(AuthContext);
     const [shareableLink, setShareableLink] = useState("");
 
@@ -67,12 +67,9 @@ export default function Share() {
             try {
                 setIsLoading(true)
                 const { data } = await axiosInstance.post("/api/shared/summary", { sharename });
-                setSummary({
-                    keypoints: data.summary.keypoints || [],
-                    summary: data.summary.summaryText || [],
-                    timestamps: data.summary.timestamps || []
-                });
-                setShareableLink(data.summary.shareableLink || "")
+                console.log(data)
+                setSummary(data);
+                setShareableLink(data.shareableLink || "")
 
             } catch ({ response }) {
                 console.error(response.data.error)
@@ -140,13 +137,35 @@ export default function Share() {
                                     </ul>
                                 </div>
                             </div>
+                            {
+                                summary?.thumbnailUrl && (
+                                    <div className="summary-video">
+                                        <div className="video-description">
+                                            <h5 className="video-title">{summary?.summaryTitle}</h5>
+                                            <div className="videoTimeStamp">
+                                                <div className="videoText">
+                                                    Video
+                                                </div>
+                                                <div className="videoTime">
+                                                    0:00/{summary?.videoTimestamp}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <img
+                                            className="summary-thumbnail"
+                                            src={summary?.thumbnailUrl}
+                                            alt="Video Thumbnail"
+                                        />
+                                    </div>
+                                )
+                            }
                             <div className="quick-summary">
                                 <h3>
                                     <img src={diamondIcon} alt="Diamond Icon" />
                                     Quick Summary
                                 </h3>
                                 <ul>
-                                    {summary.keypoints?.map((point, index) => (
+                                    {summary?.keypoints?.map((point, index) => (
                                         <li key={index}>{point}</li>
                                     ))}
                                 </ul>
@@ -156,7 +175,7 @@ export default function Share() {
                                     <img src={documentIcon} alt="Document Icon" />
                                     Detailed Summary
                                 </h3>
-                                <p className={expand ? "show" : ""}>{summary.summary}</p>
+                                <p className={expand ? "show" : ""}>{summary?.summaryText}</p>
                                 <Link className="show-more" onClick={() => setExpand(!expand)}>
                                     {expand ? "Show less" : "Show more"}
                                 </Link>
@@ -166,7 +185,7 @@ export default function Share() {
                 }
             </div>
             <div className="footerCTA">
-                <Link to="/chat">Try Youtella for Free</Link>
+                <Link to="/">Try Youtella for Free</Link>
             </div>
         </>
     )
