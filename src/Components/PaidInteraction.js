@@ -12,9 +12,10 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import audioSvg from "../Assets/images/audio.svg";
 import xIcon from "../Assets/images/x-icon.svg";
+import ChatBot from "./Chatbot";
 
 
-export default function PaidInteraction({ subHeading, selectedSummary }) {
+export default function PaidInteraction({ subHeading, selectedSummary, onSummaryGenerated }) {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [expand, setExpand] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState({
@@ -142,6 +143,9 @@ export default function PaidInteraction({ subHeading, selectedSummary }) {
         setProgress(0);
         setEstimatedTime(0);
         setCopyButtonText("Copy Summary");
+        setIsLoading(false);
+        setShareableLink("");
+
         if (isLoading) return;
 
         if (!videoUrl && !uploadedFile) {
@@ -221,6 +225,9 @@ export default function PaidInteraction({ subHeading, selectedSummary }) {
                     setSummary(task.summary);
                     setMessage({});
                     setShareableLink(task.summary.shareableLink || "");
+                    setIsLoading(false);
+                    onSummaryGenerated();
+                    break;
                 } else if (task.status === 'failed') {
                     throw new Error(task.error);
                 }
@@ -768,6 +775,7 @@ export default function PaidInteraction({ subHeading, selectedSummary }) {
                 onChange={(e) => handleFileUpload(e, "audio")}
                 disabled={uploadedFile}
             />
+            <ChatBot summary={summary?._id} />
         </div>
     );
 }
