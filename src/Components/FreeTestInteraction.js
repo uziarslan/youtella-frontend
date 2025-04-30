@@ -273,6 +273,13 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
 
     return (
         <div className="interactionContainer">
+            {!showSummary && (
+                <div className="mainHeading">
+                    <h2>Save Hours Watching Youtube Videos</h2>
+                    <p>Instantly Summarize Any Youtube Video Into a Quick, Easy-to-Read Summary.</p>
+                </div>
+            )
+            }
             <form onSubmit={handleGetSummary} className="interactionInput">
                 <input
                     type="text"

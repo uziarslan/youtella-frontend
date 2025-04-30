@@ -27,7 +27,7 @@ export default function Basic() {
     return (
         <>
             <Navbar />
-            <div className="basic-body">
+            <div className="basic-body p-3 p-md-0">
                 <FreeTestInteraction subHeading="Supported format: Youtube, Upto 100MB of video and 5MB of audio" />
             </div>
         </>
