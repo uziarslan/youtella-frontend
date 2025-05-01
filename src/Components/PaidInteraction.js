@@ -383,10 +383,13 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
     }, [openDropdown]);
 
     const formatEstimatedTime = (seconds) => {
-        if (!seconds || seconds <= 0) return "00:00 min";
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} min`;
+        const totalSeconds = Number(seconds).toFixed(0); // Round to nearest whole number
+        if (!totalSeconds || totalSeconds <= 0) return "00:00 min";
+
+        const minutes = Math.floor(totalSeconds / 60);
+        const remainingSeconds = totalSeconds % 60;
+
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
     const options = {
@@ -629,18 +632,18 @@ export default function PaidInteraction({ subHeading, selectedSummary, onSummary
                     <div className="progress-bar-container">
                         <div
                             className="progress-bar-custom"
-                            style={{ width: `${progress}%` }}
+                            style={{ width: `${progress.toFixed(2)}%` }}
                         ></div>
                         <div className="progress-percentage">
-                            {progress}%
+                            {progress.toFixed(2)}%
                         </div>
                     </div>
                     <div className="progress-info">
                         <p className="progress-text">
-                            Completed: {progress}%
+                            Completed: {progress.toFixed(2)}%
                         </p>
                         <p className="estimated-time">
-                            Est time: {formatEstimatedTime(estimatedTime)}
+                            Est time: {formatEstimatedTime(estimatedTime.toFixed(2))}
                         </p>
                     </div>
                 </div>

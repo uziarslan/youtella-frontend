@@ -199,12 +199,15 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
         setTimeout(() => setCopyText(false), 3000);
     }, [copyText]);
 
-    const formatEstimatedTime = (seconds) =>
-        seconds > 0
-            ? `${Math.floor(seconds / 60)
-                .toString()
-                .padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`
-            : "00:00";
+    const formatEstimatedTime = (seconds) => {
+        const totalSeconds = Number(seconds).toFixed(0); // Round to nearest whole number
+        if (!totalSeconds || totalSeconds <= 0) return "00:00 min";
+
+        const minutes = Math.floor(totalSeconds / 60);
+        const remainingSeconds = totalSeconds % 60;
+
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')} min`;
+    };
 
     const toggleDropdown = (option) => {
         if ((uploadedFile || videoUrl.length > 0) && option === "upload") return;
@@ -379,12 +382,21 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
             {isLoading && (
                 <div className="loading-section">
                     <div className="progress-bar-container">
-                        <div className="progress-bar-custom" style={{ width: `${progress}%` }}></div>
-                        <div className="progress-percentage">{progress}%</div>
+                        <div
+                            className="progress-bar-custom"
+                            style={{ width: `${progress.toFixed(2)}%` }}
+                        ></div>
+                        <div className="progress-percentage">
+                            {progress.toFixed(2)}%
+                        </div>
                     </div>
                     <div className="progress-info">
-                        <p className="progress-text">Completed: {progress}%</p>
-                        <p className="estimated-time">Est time: {formatEstimatedTime(estimatedTime)}</p>
+                        <p className="progress-text">
+                            Completed: {progress.toFixed(2)}%
+                        </p>
+                        <p className="estimated-time">
+                            Est time: {formatEstimatedTime(estimatedTime.toFixed(2))}
+                        </p>
                     </div>
                 </div>
             )}
