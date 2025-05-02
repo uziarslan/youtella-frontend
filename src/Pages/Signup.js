@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from "react";
 import signup from "../Assets/images/signup.png";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext"; // Adjust path as needed
+import ReCAPTCHA from "react-google-recaptcha";
+
 
 export default function Signup() {
     // Single state object for form data
@@ -12,6 +14,11 @@ export default function Signup() {
         confirmPassword: "",
     });
     const [error, setError] = useState(""); // For validation or API errors
+    const [captchaToken, setCaptchaToken] = useState("");
+
+    const handleCaptchaChange = (token) => {
+        setCaptchaToken(token);
+    };
 
     // Context and navigation
     const { register, isLoading, setIsLoading } = useContext(AuthContext);
@@ -67,7 +74,7 @@ export default function Signup() {
 
         try {
             // Call register from AuthContext
-            const { data } = await register(formData);
+            const { data } = await register({ ...formData, captcha: captchaToken });
             navigate(`/chat/${data.user._id}`);
 
         } catch (err) {
@@ -136,6 +143,11 @@ export default function Signup() {
                                     required
                                 />
                             </div>
+                            <ReCAPTCHA
+                                className="mb-3"
+                                sitekey="6LdwQywrAAAAAEYV5i3Hj8Qgr6rfHNLq7FoR_YBO"
+                                onChange={handleCaptchaChange}
+                            />
                             {error && <div className="mb-4 form-text text-danger">{error}</div>}
                             <button
                                 type="submit"
