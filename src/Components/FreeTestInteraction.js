@@ -278,8 +278,8 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
         <div className="interactionContainer">
             {!showSummary && (
                 <div className="mainHeading">
-                    <h2>Save Hours Watching Youtube Videos</h2>
-                    <p>Instantly Summarize Any Youtube Video Into a Quick, Easy-to-Read Summary.</p>
+                    <h2>Summarize YouTube Videos Instantly with AI</h2>
+                    <p>Instantly turn any YouTube video into a quick, easy-to-read summary.</p>
                 </div>
             )
             }

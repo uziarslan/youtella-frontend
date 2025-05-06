@@ -1,18 +1,20 @@
 import React, { useState, useContext, useEffect } from "react";
 import forgot from "../Assets/images/forgot.png";
 import arrowLeft from "../Assets/images/arrow-left.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { AuthContext } from "../Context/AuthContext"; // Adjust path as needed
+import { AuthContext } from "../Context/AuthContext";
+import axiosInstance from "../services/axiosInstance";
 
 export default function Forgot() {
     const [captchaToken, setCaptchaToken] = useState("");
     const [formData, setFormData] = useState({
-        email: "",
+        username: "",
     });
     const [message, setMessage] = useState({});
 
     const { isLoading, setIsLoading } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
         setIsLoading(false);
@@ -30,21 +32,43 @@ export default function Forgot() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage({});
         setIsLoading(true);
-        const { email } = formData;
+        const { username } = formData;
 
         // Validation
-        if (!email) {
+        if (!username) {
             setMessage({ error: "Email is required." });
             return;
         }
 
-        // Simulate API call
-        console.log("Sending password reset link to:", { ...formData, captchaToken });
-        setIsLoading(false);
+        try {
+            const { data } = await axiosInstance.post("/api/auth/user/forgot-password", { ...formData, captcha: captchaToken });
+
+            setMessage({ success: data.success });
+
+            setTimeout(() => {
+                navigate(`/verify-code?token=${data.resetToken}`);
+            }, 3000)
+
+            setIsLoading(false);
+
+        } catch (error) {
+            setIsLoading(false);
+            if (error.response && error.response.data) {
+                setMessage({ error: error.response.data.error });
+            } else {
+                setMessage({ error: "An unexpected error occurred." });
+            }
+        } finally {
+            setIsLoading(false);
+            setFormData({
+                username: "",
+            });
+            setCaptchaToken("");
+        }
     }
     return (
         <>
@@ -66,7 +90,7 @@ export default function Forgot() {
                         <h1 className="mb-4 authHeading">Forgot Password</h1>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
-                                <input name="email" required disabled={isLoading} onChange={handleChange} value={formData.email} className="authInputs" placeholder="Enter your email address" type="email" />
+                                <input name="username" required disabled={isLoading} onChange={handleChange} value={formData.email} className="authInputs" placeholder="Enter your email address" type="email" />
                             </div>
                             <div className="mb-4">
                                 <ReCAPTCHA
@@ -74,7 +98,7 @@ export default function Forgot() {
                                     onChange={handleCaptchaChange}
                                 />
                             </div>
-                            {message.error && <p className="error">{message.error}</p>}
+                            {message && <p className={`text-start ${message?.error ? "text-danger" : "text-success"}`}>{message.error || message.success}</p>}
                             <button disabled={isLoading} type="submit" className="submitBtn">{isLoading ? "Please wait..." : "Continue"}</button>
                         </form>
                     </div>

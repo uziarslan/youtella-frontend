@@ -13,6 +13,7 @@ import Success from './Pages/Success';
 import Cancel from './Pages/Cancel';
 import Share from './Pages/Share';
 import Inactive from './Pages/Inactive';
+import Newpassword from './Pages/Newpassword';
 
 // Wrapper component to handle /chat/:id rendering
 function ChatRoute() {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/share/:sharename" element={<Share />} />
           <Route path="/forgot-password" element={<Forgot />} />
           <Route path="/verify-code" element={<Code />} />
+          <Route path="/new-password" element={<Newpassword />} />
           <Route path="/payment-success" element={<Success />} />
           <Route path="/payment-cancel" element={<Cancel />} />
         </Routes>
