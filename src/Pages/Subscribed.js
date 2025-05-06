@@ -5,6 +5,7 @@ import axiosInstance from '../services/axiosInstance';
 import { AuthContext } from '../Context/AuthContext';
 import profile from '../Assets/images/profile.png';
 import PaidInteraction from '../Components/PaidInteraction';
+import Footer from '../Components/Footer';
 
 export default function Subscribed() {
     const [activeComponent, setActiveComponent] = useState('interaction');
@@ -13,12 +14,25 @@ export default function Subscribed() {
     const [resetKey, setResetKey] = useState(0);
     const [summaryGenerationCounter, setSummaryGenerationCounter] = useState(0);
     const [profileImage, setProfileImage] = useState(profile);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const { user } = useContext(AuthContext);
 
-    const isMobile = window.innerWidth <= 768;
+    // Responsive handler
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
 
-    // Initialize profileImage with user?.profileImage?.path or default
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    // Update profile image if user changes
     useEffect(() => {
         setProfileImage(user?.profileImage?.path || profile);
     }, [user]);
@@ -41,7 +55,7 @@ export default function Subscribed() {
 
     const handleSummarySelect = useCallback(async (summaryId) => {
         try {
-            const response = await axiosInstance.get(`/api/summary/${summaryId}`,);
+            const response = await axiosInstance.get(`/api/summary/${summaryId}`);
             setSelectedSummary(response.data);
             setActiveComponent('interaction');
             setIsSidebarOpen(false);
@@ -55,50 +69,61 @@ export default function Subscribed() {
     };
 
     return (
-        <div className="app-container max-width">
-            {(isMobile && !isSidebarOpen) && (
-                <button
-                    className="sidebar-toggle"
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                >
-                    <i className='bx bx-menu'></i>
-                </button>
-            )}
-            <Sidebar
-                onStartNew={handleStartNew}
-                onSettingsClick={handleSettingsClick}
-                onSummarySelect={handleSummarySelect}
-                onSummaryGenerated={summaryGenerationCounter}
-                isMobileOpen={isSidebarOpen}
-                user={user}
-                profileImage={profileImage}
-                onClose={() => setIsSidebarOpen(false)}
-            />
-
-            {isMobile && isSidebarOpen && (
-                <div
-                    className="sidebar-overlay"
-                    onClick={() => setIsSidebarOpen(false)}
+        <>
+            <div className="app-container max-width">
+                {(isMobile && !isSidebarOpen) && (
+                    <button
+                        className="sidebar-toggle"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    >
+                        <i className='bx bx-menu'></i>
+                    </button>
+                )}
+                <Sidebar
+                    onStartNew={handleStartNew}
+                    onSettingsClick={handleSettingsClick}
+                    onSummarySelect={handleSummarySelect}
+                    onSummaryGenerated={summaryGenerationCounter}
+                    isMobileOpen={isSidebarOpen}
+                    user={user}
+                    profileImage={profileImage}
+                    onClose={() => setIsSidebarOpen(false)}
                 />
-            )}
 
-            <div className="main-content">
-                {activeComponent === 'interaction' ? (
-                    <PaidInteraction
-                        key={resetKey}
-                        subHeading="Supported format: YouTube, Upto 2GB of video and 2GB of audio"
-                        selectedSummary={selectedSummary}
-                        onSummaryGenerated={handleSummaryGenerated}
-                    />
-                ) : (
-                    <Settings
-                        handleGoBack={handleGoBack}
-                        user={user}
-                        profileImage={profileImage}
-                        setProfileImage={setProfileImage}
+                {isMobile && isSidebarOpen && (
+                    <div
+                        className="sidebar-overlay"
+                        onClick={() => setIsSidebarOpen(false)}
                     />
                 )}
+
+                <div className="main-content">
+                    {activeComponent === 'interaction' ? (
+                        <PaidInteraction
+                            key={resetKey}
+                            subHeading="Supported format: YouTube, Upto 2GB of video and 2GB of audio"
+                            selectedSummary={selectedSummary}
+                            onSummaryGenerated={handleSummaryGenerated}
+                        />
+                    ) : (
+                        <Settings
+                            handleGoBack={handleGoBack}
+                            user={user}
+                            profileImage={profileImage}
+                            setProfileImage={setProfileImage}
+                        />
+                    )}
+                </div>
             </div>
-        </div>
+            <div
+                style={
+                    !isMobile
+                        ? { width: "calc(100vw - 330px)", marginLeft: "auto" }
+                        : undefined
+                }
+            >
+                <Footer />
+            </div>
+        </>
     );
 }

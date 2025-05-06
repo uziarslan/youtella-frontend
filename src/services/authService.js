@@ -27,7 +27,6 @@ const logout = () => {
 
 const getUser = async () => {
   const token = localStorage.getItem("token");
-  console.log(token)
   if (token) {
     const response = await axiosInstance.get(`${API_URL}/user`);
     return response.data;

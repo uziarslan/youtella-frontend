@@ -14,6 +14,8 @@ import Cancel from './Pages/Cancel';
 import Share from './Pages/Share';
 import Inactive from './Pages/Inactive';
 import Newpassword from './Pages/Newpassword';
+import TermsOfUse from './Pages/Terms';
+import PrivacyPolicy from './Pages/Privacy';
 
 // Wrapper component to handle /chat/:id rendering
 function ChatRoute() {
@@ -43,6 +45,8 @@ function App() {
           <Route path="/new-password" element={<Newpassword />} />
           <Route path="/payment-success" element={<Success />} />
           <Route path="/payment-cancel" element={<Cancel />} />
+          <Route path="/terms-of-usage" element={<TermsOfUse />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
       </div>
     </BrowserRouter>

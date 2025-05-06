@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Navbar';
 import { AuthContext } from '../Context/AuthContext'; // Adjust path as per your setup
 import FreeTestInteraction from '../Components/FreeTestInteraction';
+import Footer from '../Components/Footer';
 
 export default function Basic() {
     const { id } = useParams(); // Get the :id from the URL
@@ -30,6 +31,7 @@ export default function Basic() {
             <div className="basic-body p-3 p-md-0">
                 <FreeTestInteraction subHeading="Supported format: Youtube, Upto 100MB of video and 5MB of audio" />
             </div>
+            <Footer />
         </>
     );
 }

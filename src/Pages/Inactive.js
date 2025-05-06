@@ -4,6 +4,7 @@ import Navbar from '../Components/Navbar';
 import Modal from '../Components/Modal';
 import FreeTestInteraction from '../Components/FreeTestInteraction';
 import { AuthContext } from '../Context/AuthContext';
+import Footer from '../Components/Footer';
 
 export default function Inactive() {
     const [canUseInactive, setCanUseInactive] = useState(false);
@@ -99,6 +100,7 @@ export default function Inactive() {
                     </button>
                 </div>
             </Modal>
+            <Footer />
         </>
     );
 }
