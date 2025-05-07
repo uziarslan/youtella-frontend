@@ -151,11 +151,7 @@ export default function Share() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <img
-                                            className="summary-thumbnail"
-                                            src={summary?.thumbnailUrl}
-                                            alt="Video Thumbnail"
-                                        />
+                                        <iframe src={summary?.thumbnailUrl} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                                     </div>
                                 )
                             }
