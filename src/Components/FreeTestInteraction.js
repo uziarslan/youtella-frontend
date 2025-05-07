@@ -378,7 +378,12 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
                     )}
                 </div>
             )}
-            <div className="form-text text-danger">{message.error || message.success}</div>
+            <div
+                className="form-text text-danger"
+                dangerouslySetInnerHTML={{
+                    __html: message.error || message.success,
+                }}
+            ></div>
             {isLoading && (
                 <div className="loading-section">
                     <div className="progress-bar-container">
@@ -483,11 +488,7 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
                                     </div>
                                 </div>
                             </div>
-                            <img
-                                className="summary-thumbnail"
-                                src={summary?.thumbnailUrl}
-                                alt="Video Thumbnail"
-                            />
+                            <iframe src={summary?.thumbnailUrl} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                         </div>
                     )
                 }

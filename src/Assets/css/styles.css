@@ -357,7 +357,7 @@
     margin: 0;
 }
 
-.summary-video img {
+.summary-video iframe {
     max-width: 300px;
     width: 100%;
     height: auto;
