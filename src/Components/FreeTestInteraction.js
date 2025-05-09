@@ -6,7 +6,8 @@ import documentIcon from "../Assets/images/document.svg";
 import xIcon from "../Assets/images/x-icon.svg";
 import PropTypes from "prop-types";
 import audioSvg from "../Assets/images/audio.svg";
-
+import singleBarIcon from "../Assets/images/single-bar.svg";
+import checkIcon from "../Assets/images/check.svg";
 
 export default function FreeTestInteraction({ subHeading, subscription, onSummaryGenerated, onGenerateSummaryRequest }) {
     const [videoUrl, setVideoUrl] = useState("");
@@ -513,6 +514,40 @@ export default function FreeTestInteraction({ subHeading, subscription, onSummar
                     </p>
                     <Link className="show-more" onClick={() => setExpand(!expand)}>
                         {expand ? "Show less" : "Show more"}
+                    </Link>
+                </div>
+                <div className="upgrade-section">
+                    <h3>
+                        <img src={singleBarIcon} alt="Single Bar Icon" />
+                        Want More From This Video?
+                    </h3>
+                    <ul>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Timestamps & Chapter Breakdown</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Download Summaries as PDF</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Save & Reaccess Any Summary</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Works with Zoom & Non-YouTube Links</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Multilingual Summaries</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Customize Tone, Length, and Language</li>
+                        <li>
+                            <img src={checkIcon} alt="Check Icon" />
+                            Chat with Your Summary (AI Chatbot)</li>
+                    </ul>
+                    <Link className="d-flex justify-content-center" to="/pricing">
+                        <button style={{ fontSize: "0.8rem" }} className="btn btn-primary">
+                            Upgrade to Premium to unlock
+                        </button>
                     </Link>
                 </div>
             </div>
