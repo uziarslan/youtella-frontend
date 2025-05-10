@@ -43,9 +43,15 @@ export default function Success() {
             }
 
             try {
-                const response = await axiosInstance.post("/api/stripe/checkout-success", {
-                    sessionId,
-                });
+                const response = await axiosInstance.post(
+                    "/api/stripe/checkout-success",
+                    { sessionId },
+                    {
+                        headers: {
+                            'Idempotency-Key': sessionId,
+                        },
+                    }
+                );
 
                 setStatus("success");
 
