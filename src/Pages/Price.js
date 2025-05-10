@@ -3,11 +3,14 @@ import Navbar from "../Components/Navbar";
 import check from "../Assets/images/check.svg";
 import cross from "../Assets/images/cross.svg";
 import axiosInstance from "../services/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 export default function Price() {
     const [openFeature, setOpenFeature] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     const toggleFeature = (feature) => {
         setOpenFeature(openFeature === feature ? null : feature);
@@ -26,8 +29,11 @@ export default function Price() {
             window.location.href = response.data.url;
         } catch (err) {
             console.error("Error creating checkout session:", err);
+            if (err.response?.status === 401) {
+                return navigate("/login");
+            }
             setError(
-                err.response?.data?.error ||
+                err.response?.data?.message ||
                 "Failed to start premium subscription. Please try again."
             );
         } finally {
