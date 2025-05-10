@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import creditCard from "../Assets/images/credit-card.svg";
 import creditCardError from "../Assets/images/credit-card-error.svg";
@@ -10,61 +10,40 @@ export default function Success() {
     const [errorMessage, setErrorMessage] = React.useState("");
     const location = useLocation();
     const navigate = useNavigate();
-    const isProcessingRef = useRef(false);
-    const hasVerifiedRef = useRef(false);
 
     useEffect(() => {
         const verifyCheckout = async () => {
-            if (hasVerifiedRef.current) {
-                return;
-            }
-
-            if (isProcessingRef.current) {
-                return;
-            }
-            isProcessingRef.current = true;
-            hasVerifiedRef.current = true;
-
             const queryParams = new URLSearchParams(location.search);
             const sessionId = queryParams.get("session_id");
 
             if (!sessionId) {
                 setStatus("error");
                 setErrorMessage("Missing session ID. Please try again.");
-                isProcessingRef.current = false;
                 return;
             }
 
-            const processedSessions = JSON.parse(localStorage.getItem("processedSessions") || "[]");
-            if (processedSessions.includes(sessionId)) {
-                setStatus("success");
-                isProcessingRef.current = false;
+            const lockKey = `verifying_${sessionId}`;
+
+            // If already verifying this session, abort
+            if (sessionStorage.getItem(lockKey)) {
+                console.warn("Duplicate verification blocked by session lock.");
                 return;
             }
+
+            // Set lock immediately to block duplicate triggers
+            sessionStorage.setItem(lockKey, "true");
 
             try {
-                const response = await axiosInstance.post(
-                    "/api/stripe/checkout-success",
-                    { sessionId },
-                    {
-                        headers: {
-                            'Idempotency-Key': sessionId,
-                        },
-                    }
-                );
+                const response = await axiosInstance.post("/api/stripe/checkout-success", {
+                    sessionId,
+                });
 
                 setStatus("success");
 
-                processedSessions.push(sessionId);
-                localStorage.setItem("processedSessions", JSON.stringify(processedSessions));
-
+                // Navigate after a short delay
                 setTimeout(() => {
                     const userId = response.data.userId;
-                    if (userId) {
-                        navigate(`/chat/${userId}`);
-                    } else {
-                        navigate("/login");
-                    }
+                    navigate(userId ? `/chat/${userId}` : "/login");
                 }, 3000);
 
             } catch (err) {
@@ -73,17 +52,11 @@ export default function Success() {
                     err.response?.data?.error ||
                     "Failed to verify your subscription. Please contact support."
                 );
-
-                processedSessions.push(sessionId);
-                localStorage.setItem("processedSessions", JSON.stringify(processedSessions));
-            } finally {
-                isProcessingRef.current = false;
             }
         };
 
         verifyCheckout();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navigate]);
+    }, [navigate, location.search]);
 
     return (
         <div className="page-container">
